@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
@@ -15,6 +13,7 @@ import logging
 import itertools
 import json
 import os
+import numpy as np
 
 class AnalyseYelp():
     CAT_DATA_PATH = 'output/categories'
@@ -234,6 +233,9 @@ class AnalyseYelp():
         cluster = KMeans(n_clusters=n_clusters)
 
         result, data = self._prepare_data_for_cluster(path)
+        data.data = np.nan_to_num(data.data)
+        # data[np.isnan(data)] = 0
+
         cluster.fit(data)
         result['cluster'] = cluster.labels_.tolist()
         with open(path, 'w') as fh:
@@ -243,7 +245,9 @@ class AnalyseYelp():
         cluster = AgglomerativeClustering(n_clusters=n_clusters)
 
         result, data = self._prepare_data_for_cluster(path)
-        cluster.fit(data.toarray())
+        data = np.nan_to_num(data, dtype=np.float)
+
+        cluster.fit(data)
         result['cluster'] = cluster.labels_.tolist()
         with open(path, 'w') as fh:
             json.dump(result, fh)
@@ -261,9 +265,9 @@ if __name__ == '__main__':
     #        norm='l2',
     #        output='text_repr')
     # ana.cat_sim_text()
-    ana.cat_sim_text(
-           norm='l2',
-           output='text_repr')
+    # ana.cat_sim_text(
+    #        norm='l2',
+    #        output='text_repr')
     # ana.clustering_kmeans('./output/text_repr.json', 3)
     #ana.cat_sim_text(
     #        norm='l2',
@@ -271,13 +275,13 @@ if __name__ == '__main__':
     #        sublinear_tf=True,
     #        output='text_repr_tf_idf')
     # ana.clustering_kmeans('./output/text_repr_tf_idf.json', 3)
-    path = ana.cat_sim_bm25_idf_lda(
-           output='lda_tf_idf',
-           )
-    ana.clustering_kmeans(path, 3)
+    # path = ana.cat_sim_bm25_idf_lda(
+    #        output='lda_tf_idf',
+    #        )
+    # ana.clustering_kmeans(path, 3)
     # ana.clustering_kmeans('./output/cluster_3.json', 3)
     #ana.clustering_kmeans('./output/cluster_6.json', 6)
     #ana.clustering_kmeans('./output/cluster_9.json', 9)
     # ana.clustering_agglomerative('./output/hierarchical_3.json', 3)
-    # ana.clustering_kmeans('./output/cluster_3.json', 3)
+    ana.clustering_kmeans('./output/kmeans.json', 3)
 
